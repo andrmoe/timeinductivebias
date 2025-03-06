@@ -1,0 +1,6 @@
+Diagram for case one and two
+Explain mesa-optimisers better
+Explain why the base objective only cares about the current training episode
+Explicitly assume that the mesa objective doesn't depend on the input.
+Pseudocode for experiments
+Demonstration of gradient descent trough optimiser
