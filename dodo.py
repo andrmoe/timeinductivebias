@@ -4,5 +4,5 @@ def task_compile_pdf():
                         ['bibtex', 'temp/timeinductivebias'],
                         latex_command,
                         latex_command],
-            'file_dep': ['timeinductivebias.tex', 'timeinductivebias.bib', 'mesaoptdiagram.pdf'],
+            'file_dep': ['timeinductivebias.tex', 'background.tex', 'generalargument.tex', 'timeinductivebias.bib', 'mesaoptdiagram.pdf'],
             'targets': ['temp/timeinductivebias.pdf']}
