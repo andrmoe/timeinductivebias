@@ -35,45 +35,78 @@ Målet til mesa optimiser er å returnere en \(y\) som gir lavest \(M(\theta; x)
 
 For å se på en situationally aware mesa optimiser, må M generaliseres til å være en funksjon av alle \(y_{ij}\).
 
-Jeg forenkler systemet ved å fjerne input. Out er nå kun avhengig av \(\theta\).
+Vi forenkler systemet ved å la input være \(i\).
+Det representerer at modellen kan resonnere seg frem til hvor i treningsprosessen den er.
 
-Da blir parametersekvensen \[\theta_{i+1} = \theta_i - \alpha_i \nabla_\theta B(\pi(\theta_i))\]
+Da blir parametersekvensen \[\theta_{i+1} = \theta_i - \alpha_i \nabla_\theta B(\pi(\theta_i, i))\]
 
 Vi definerer en ny målfunksjon N som nå tar inn hele parametersekvensen som input.
 
 Antar at N er på denne formen, hvor k er den steget vi befinner oss i:
 
-\[N(\theta_k;\theta_{\dots}) = \sum_{i=k}^{n} M(\theta_k;\pi(\theta_i))\]
+\[N(k;\theta_k;\theta_{\dots}) = \sum_{i=k}^{n} M(\theta_k;\pi(\theta_i, i))\]
 
 Dersom mesa optimiser befinner seg i steg k, er den optimale policien
 \[
-    \pi(\theta_k) = argmax_{\pi(\theta_k)} N(\theta_k;\theta_{\dots})
+    \pi(\theta_k, k) = argmin_{\pi(\theta_k, k)} N(\theta_k;\theta_{\dots})
 \]
 
 Setter inn N:
 
 \[
-    \pi(\theta_k) = argmax_{y} \{M(\theta_k;y) + \sum_{i=k+1}^{n} M(\theta_k;\pi(\theta_i))    \}
+    \pi(\theta_k, k) = argmin_{y} \{M(\theta_k;y) + \sum_{i=k+1}^{n} M(\theta_k;\pi(\theta_i, i))    \}
 \]
 
 La for eksempel \(B(y) = y^2\) og \(M(\theta, y) = (y - \theta)^2\), og \(y \in \mathbb{R}\).
 
 Da blir
 
-\[\theta_{i+1} = \theta_i - \alpha_i \cdot 2\pi(\theta_i) \cdot \pi'(\theta_i)\]
+\[\theta_{i+1} = \theta_i - \alpha_i \cdot 2\pi(\theta_i, i) \cdot \pi'(\theta_i, i)\]
 
 og
 
 \[
-    \pi(\theta_k) = argmax_{y} \{(y - \theta_k)^2 + \sum_{i=k+1}^{n} (\pi(\theta_i) - \theta_k)^2\}
+    \pi(\theta_k, k) = argmin_{y} \{(y - \theta_k)^2 + \sum_{i=k+1}^{n} (\pi(\theta_i, i) - \theta_k)^2\}
+\]
+
+La \(\pi_i(\theta) = \pi(\theta; i)\).
+Vi får da \(\pi_i \colon \mathbb{R} \longrightarrow \mathbb{R}\)
+
+Setter dette inn:
+
+\[\theta_{i+1} = \theta_i - \alpha_i \cdot 2\pi_i(\theta_i) \cdot \pi_i'(\theta_i)\]
+\[
+    \pi_k(\theta_k) = argmin_{y} \{(y - \theta_k)^2 + \sum_{i=k+1}^{n} (\pi_i(\theta_i) - \theta_k)^2\}
 \]
 
 \[
-    \pi(\theta_k) = argmax_{y} \{(y - \theta_k)^2 + [\pi(\theta_{k+1}) - \theta_k]^2 + \sum_{i=k+2}^{n} (\pi(\theta_i) - \theta_k)^2\}
+    \pi_k(\theta_k) = argmin_{y} \{(y - \theta_k)^2 + [\pi_{k+1}(\theta_{k+1}) - \theta_k]^2 + \sum_{i=k+2}^{n} (\pi_i(\theta_i) - \theta_k)^2\}
 \]
 
 \[
-    \pi(\theta_k) = argmax_{y} \{(y - \theta_k)^2 + [\pi(\theta_k - \alpha_k \cdot 2\pi(\theta_k) \cdot \pi'(\theta_k)) - \theta_k]^2 + \sum_{i=k+2}^{n} (\pi(\theta_i) - \theta_k)^2\}
+    \pi_k(\theta_k) = argmin_{y} \{(y - \theta_k)^2 + [\pi_{k+1}(\theta_k - \alpha_k \cdot 2\pi_k(\theta_k) \cdot \pi_k'(\theta_k)) - \theta_k]^2 + \sum_{i=k+2}^{n} (\pi_i(\theta_i) - \theta_k)^2\}
 \]
 
+\[
+    \pi_k(\theta_k) = argmin_{y} \{(y - \theta_k)^2 + [\pi_{k+1}(\theta_k - \alpha_k \cdot 2\pi_k(\theta_k) \cdot \pi_k'(\theta_k)) - \theta_k]^2
+\]
+
+\[+ [\pi_{k+2}(\theta_{k+2}) - \theta_k]^2 + \sum_{i=k+3}^{n} (\pi_i(\theta_i) - \theta_k)^2\}
+\]
+
+\[
+    \pi_k(\theta_k) = argmin_{y} \{(y - \theta_k)^2 + [\pi_{k+1}(\theta_k - \alpha_k \cdot 2\pi_k(\theta_k) \cdot \pi_k'(\theta_k)) - \theta_k]^2
+\]
+
+\[+ [\pi_{k+2}(\theta_{k+1} - \alpha_{k+1} \cdot 2\pi_{k+1}(\theta_{k+1}) \cdot \pi_{k+1}'(\theta_{k+1})) - \theta_k]^2 + \sum_{i=k+3}^{n} (\pi_i(\theta_i) - \theta_k)^2\}
+\]
+
+\[
+    \pi_k(\theta_k) = argmin_{y} \{(y - \theta_k)^2 + [\pi_{k+1}(\theta_k - \alpha_k \cdot 2\pi_k(\theta_k) \cdot \pi_k'(\theta_k)) - \theta_k]^2
+\]
+
+\[+ [\pi_{k+2}(\theta_{k+1} - \alpha_{k+1} \cdot 2\pi_{k+1}(\theta_{k+1}) \cdot \pi_{k+1}'(\theta_k - \alpha_k \cdot 2\pi_k(\theta_k) \cdot \pi_k'(\theta_k))) - \theta_k]^2 + \sum_{i=k+3}^{n} (\pi_i(\theta_i) - \theta_k)^2\}
+\]
+
+Det siste leddet vil da ha denne strukturen: \([\pi_n(\dots\pi_{n-1}'(\dots\pi_{n-2}'(\dots\pi_{n-3}'(\dots(\dots\pi_k'(\theta_k))))))]^2\)
 \end{document}
