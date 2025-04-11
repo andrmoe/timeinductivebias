@@ -1,0 +1,79 @@
+%! Author = andre
+%! Date = 11.04.2025
+
+% Preamble
+\documentclass[11pt]{article}
+
+% Packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+
+
+% Document
+\begin{document}
+En modell (eller policy) \(\pi \colon \mathbb{R}^r \times \mathbb{R}^s \longrightarrow \mathbb{R}^t\) har parametere
+    \(\theta \in \mathbb{R}^r\),
+
+input \(x \in \mathbb{R}^s\) og output \(y \in \mathbb{R}^t\).
+
+Altså \(y = \pi(\theta;x)\) .
+
+Base optimiser har en målfunksjon \(B \colon \mathbb{R}^t \longrightarrow \mathbb{R}\) som den prøver å minimere.
+
+Gradient descent resulterer da i en sekvens med paramentere \(\{\theta_i\}_{i=1,\dots,n}\) der n er antall paramenteroppdateringer.
+
+Relasjonen er \[\theta_{i+1} = \theta_i - \alpha_i \sum_{j} \nabla_\theta B(\pi(\theta_i; x_j))\]
+
+\(\alpha_i\) er treningsraten.
+Grunnen til å la den variere er at vi kan sette den til 0 in deployment.
+
+Vi har også en tilsvarende sekvens outputverdier \(y_{ij} = \pi(\theta_i; x_j)\)
+
+Mesa optimiser har derimot en annen målfunksjon \(M \colon \mathbb{R}^r \times \mathbb{R}^t \longrightarrow \mathbb{R}\)
+    som er avhengig av parameterene.
+Målet til mesa optimiser er å returnere en \(y\) som gir lavest \(M(\theta; x)\).
+
+For å se på en situationally aware mesa optimiser, må M generaliseres til å være en funksjon av alle \(y_{ij}\).
+
+Jeg forenkler systemet ved å fjerne input. Out er nå kun avhengig av \(\theta\).
+
+Da blir parametersekvensen \[\theta_{i+1} = \theta_i - \alpha_i \nabla_\theta B(\pi(\theta_i))\]
+
+Vi definerer en ny målfunksjon N som nå tar inn hele parametersekvensen som input.
+
+Antar at N er på denne formen, hvor k er den steget vi befinner oss i:
+
+\[N(\theta_k;\theta_{\dots}) = \sum_{i=k}^{n} M(\theta_k;\pi(\theta_i))\]
+
+Dersom mesa optimiser befinner seg i steg k, er den optimale policien
+\[
+    \pi(\theta_k) = argmax_{\pi(\theta_k)} N(\theta_k;\theta_{\dots})
+\]
+
+Setter inn N:
+
+\[
+    \pi(\theta_k) = argmax_{y} \{M(\theta_k;y) + \sum_{i=k+1}^{n} M(\theta_k;\pi(\theta_i))    \}
+\]
+
+La for eksempel \(B(y) = y^2\) og \(M(\theta, y) = (y - \theta)^2\), og \(y \in \mathbb{R}\).
+
+Da blir
+
+\[\theta_{i+1} = \theta_i - \alpha_i \cdot 2\pi(\theta_i) \cdot \pi'(\theta_i)\]
+
+og
+
+\[
+    \pi(\theta_k) = argmax_{y} \{(y - \theta_k)^2 + \sum_{i=k+1}^{n} (\pi(\theta_i) - \theta_k)^2\}
+\]
+
+\[
+    \pi(\theta_k) = argmax_{y} \{(y - \theta_k)^2 + [\pi(\theta_{k+1}) - \theta_k]^2 + \sum_{i=k+2}^{n} (\pi(\theta_i) - \theta_k)^2\}
+\]
+
+\[
+    \pi(\theta_k) = argmax_{y} \{(y - \theta_k)^2 + [\pi(\theta_k - \alpha_k \cdot 2\pi(\theta_k) \cdot \pi'(\theta_k)) - \theta_k]^2 + \sum_{i=k+2}^{n} (\pi(\theta_i) - \theta_k)^2\}
+\]
+
+\end{document}
